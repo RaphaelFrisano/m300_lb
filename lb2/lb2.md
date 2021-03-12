@@ -10,13 +10,30 @@ _Erstellt von [Raphael Frisano](https://github.com/RaphaelFrisano) am 12.03.2021
 <br>
 
 # Grafische Übersicht
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+```
++----------------------------------+
+! PC - Privatnetz (192.168.1.25)   !                 
+! Port: 42000                      !	
+!                                  !	
+!      +--------------------+      !
+!      ! SMB Server         !      !       
+!      ! Host: SMB_fri      !      !
+!      ! IP: localhost      !      !
+!      ! Port: 445          !      !
+!      ! Nat: 42000         !      !
+!      +--------------------+      !
+!                                  !	
++----------------------------------+
+```
+
+! Ordnerstruktur Übersicht !
 
 # Beschreibung
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+Der SMB Server wird automatisch mit der vorgegeben Ordnerstruktur erstellt. Eine Firewall auf dem Server regelt dann, dass auf den Server einen Zugriff über NAT über den Port 42000 möglich ist.<br>
+Die SMB Shares können dann im Netzwerk über den Namen des Virtuellen Servers gefunden und hinzugefügt werden.
 
 # Testing
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
 
 # Genutze Quellen
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
+[Formatierung der grafischen Übersicht](https://github.com/mc-b/M300/blob/master/vagrant/fwrp/README.md)
