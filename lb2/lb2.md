@@ -36,4 +36,5 @@ Die SMB Shares können dann im Netzwerk über den Namen des Virtuellen Servers g
 Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum.
 
 # Genutze Quellen
-[Formatierung der grafischen Übersicht](https://github.com/mc-b/M300/blob/master/vagrant/fwrp/README.md)
+[Formatierung der grafischen Übersicht](https://github.com/mc-b/M300/blob/master/vagrant/fwrp/README.md)<br>
+[Genutze Box als Basis](https://app.vagrantup.com/thefuncrew/boxes/ubuntu-18.04)
