@@ -37,4 +37,4 @@ Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod 
 
 # Genutze Quellen
 [Formatierung der grafischen Übersicht](https://github.com/mc-b/M300/blob/master/vagrant/fwrp/README.md)<br>
-[Genutze Box als Basis](https://app.vagrantup.com/thefuncrew/boxes/ubuntu-18.04)
+[Genutze Box als Basis](https://app.vagrantup.com/generic/boxes/ubuntu1804)
