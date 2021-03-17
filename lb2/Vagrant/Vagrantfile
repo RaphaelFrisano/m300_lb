@@ -35,19 +35,18 @@ Vagrant.configure("2") do |config|
     sudo chmod -R g+rw /data # and give the group read and write permissions #
 
     # add new Folder to SMB config #
-    echo [DATA] >> /etc/smb.conf
-    echo path = /data >> /etc/smb.conf
-    echo valid users = @informaticians >> /etc/smb.conf
-    echo browsable = yes >> /etc/smb.conf
-    echo writable = yes >> /etc/smb.conf
-    echo read only = no >> /etc/smb.conf
+    echo "[DATA]" >> /etc/smb.conf
+    echo "path = /data" >> /etc/smb.conf
+    echo "valid users = @informaticians" >> /etc/smb.conf
+    echo "browsable = yes" >> /etc/smb.conf
+    echo "writable = yes" >> /etc/smb.conf
+    echo "read only = no" >> /etc/smb.conf
 
     # restart samba for everything to take effect#
     sudo systemctl restart smbd
 
     # add a User to Samba #
-    sudo smbpasswd -a vagrant # add user vagrant to smb #
-    echo vagrant # write defaut password to console #
+    echo -e vagrant | sudo smbpasswd -a vagrant # add user vagrant to smb and echo password to smbpasswd #
     sudo smbpasswd -e vagrant # enable the user vagrant on smb #
 
     SHELL
