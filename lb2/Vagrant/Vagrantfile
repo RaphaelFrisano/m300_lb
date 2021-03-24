@@ -23,16 +23,19 @@ Vagrant.configure("2") do |config|
   
   # Send commands through Shell
   config.vm.provision "shell", inline: <<-SHELL
+    # Change Hostname for easier access #
+    hostnamectl set-hostname DataSrv
+
     # samba setup #
     sudo apt-get install samba -y # Install samba #
-    sed -i -e 's/workgroup=/workgroup=WORKGROUP/g' </etc/samba/smb.conf> # Add WORKGROUp as workgroup to samba config #
+    sed -i -e 's/workgroup=/workgroup=WORKGROUP/g' /etc/samba/smb.conf # Add WORKGROUp as workgroup to samba config #
 
     # folder and User/Group setup #
     sudo mkdir /data # makes folder called /data #
     sudo mkdir /data/Testfolder # makes subfolder inside /data called Testfolder #
-    sudo newgrp informaticians # create new Group called informaticians #
+    sudo groupadd informaticians # create new Group called informaticians #
     sudo usermod -aG informaticians vagrant # add user to group informaticians #
-    sudo chgrp -R informaticians: /data # make group informaticians as Owner of /data folder #
+    sudo chown -R :informaticians /data # make group informaticians as Owner of /data folder #
     sudo chmod -R g+rw /data # and give the group read and write permissions #
 
     # add new Folder to SMB config #
@@ -47,10 +50,10 @@ Vagrant.configure("2") do |config|
     sudo systemctl restart smbd
 
     # add a User to Samba #
-    echo -e vagrant | sudo smbpasswd -a vagrant # add user vagrant to smb and echo password to smbpasswd #
+    echo -e vagrant\nvagrant | sudo smbpasswd -a vagrant # add user vagrant to smb and echo password to smbpasswd #
     sudo smbpasswd -e vagrant # enable the user vagrant on smb #
 
     SHELL
-  end
+  
   
 end
