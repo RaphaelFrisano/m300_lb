@@ -97,7 +97,7 @@ SHELL
 # 🔧 Probleme beim Testing 🔧
 <h3>❗ Passwort für den vagrant User auf SMB konfigurieren ❗</h3>
 <p align="left">
-  <img width="600" src="./media/VagrantPassSmb.png">
+  <img width="600" src="./media/VagrantPassSmb.PNG">
 </p>
 
 > Als das Passwort das erste mal nicht funktionierte konnte ich eine schnelle Lösung finden. Mein problem war das ich das echo PASWORT nicht gepiped habe, dadurch wurde bei dem commando kein Passwort angegeben und es war schnell ersichtlich da das Passwort einfach nachtröglich ausgegeben war.
@@ -108,7 +108,7 @@ Dies ist leider ein Problem das ich bis zum Ende des Projektes nicht abschliesse
 <br>
 <h3>❓ SMB Share im Netzwerk sichtbar machen ❓</h3>
 <p align="left">
-  <img width="600" src="./media/SMBStatus.png">
+  <img width="600" src="./media/SMBStatus.PNG">
 </p>
 
 > Nachdem alle config Files richtig configuriert wurden und der SMB Daemon ohne probleme lief (oben ersichtlich) war es mitr nur möglich den Server selbst zu sehen *\\\DataSrv* aber nicht die Unterordner. Jedes mal wo ich versuchte mich zu verbinden gab es einen Error / der ordner konnte nicht gefunden werden. Ich habe mich erkundigt an was dies liegen könnte, habe sogar die Portweiterlietung etc verändert doch nichts beseitigte das Problem.<br>
