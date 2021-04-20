@@ -1,20 +1,14 @@
-https://hub.docker.com/_/phpmyadmin
-
-docker run -p 3306:3306 --name LB3mariadb -e MYSQL_ROOT_PASSWORD=Pa$$w0rd -d mariadb:latest
-
 version: '3.1'
 
 services:
+  # Database
   db:
-    image: mariadb:10.3
+    image: mysql:8.0.24
+    volumes:
+      - db_data:/var/lib/mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: notSecureChangeMe
-
-  phpmyadmin:
-    image: phpmyadmin
-    restart: always
-    ports:
-      - 8080:80
-    environment:
-      - PMA_ARBITRARY=1
+      MYSQL_ROOT_PASSWORD: Pa$$w0rd
+      MYSQL_DATABASE: phpbase
+      MYSQL_USER: raphael
+      MYSQL_PASSWORD: Pa$$w0rd
