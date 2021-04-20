@@ -1,126 +1,129 @@
-# 📑 LB2 Dokumentation - SMB Shares mit Portfreigabe 📑
+# 📑 LB3 Dokumentation - Automatisches Wordpress mit Datenbank 📑
 <p align="left">
-  <img width="400" src="./media/vagrant.png">
-  <img width="260" src="./media/git.png">
+  <img height = "240" src="./media/docker.png">
+  <img height = "240" src="./media/wordpress.png">
 </p>
 
-_Erstellt von [Raphael Frisano](https://github.com/RaphaelFrisano) am 12.03.2021_
+_Erstellt von [Raphael Frisano](https://github.com/RaphaelFrisano) am 20.04.2021_
 
 ---
 <br>
 
 # 🖼️ Grafische Übersicht der Umgebung 🖼️
-```
-+----------------------------------+
-! PC - Privatnetz (192.168.1.25)   !
-! HyperVisor - HyperV              !                 
-! Port: 42000                      !	
-!                                  !	
-!      +--------------------+      !
-!      ! SMB Server         !      !       
-!      ! Host: DataSrv      !      !
-!      ! IP: localhost      !      !
-!      ! Port: 445          !      !
-!      ! Nat: 42000         !      !
-!      +--------------------+      !
-!                                  !	
-+----------------------------------+
-```
-<h2>🗂️ Ordnerstruktur 🗂️</h2>
 
-- \\\DataSrv
-  - \Data
-    - \TestFolder
+<img src="./media/network.png">
+
+<h2>☄️ Ports & verbindungen ☄️</h2>
+<p>
+phpmyadmin ➡️ Port 8000 ➡️ mysql
+</p>
+<p>
+mysql ➡️ Port 8000 ➡️ wordpress
+</p>
+<p>
+wordpress ➡️ Port 8000 ➡️ Virtual Machine
+</p>
+<p>
+Virtual Machine ➡️ Port 8000 ➡️ Host System
+</p>
+
 
 # 📜 Projektbeschreibung 📜
-> Auf einer ["generic ubuntu box 1804"](https://app.vagrantup.com/generic/boxes/ubuntu1804) box als erstes ein SMB Server installiert sowie konfiguriert. Es wird eine kleine Ordnerstruktur erstellt welche von der Gruppe "Informaticians" gelesern und verändert werden kann. Zu dieser Gruppe wird am start der default vagrant user hinzugefügt.<br>
-> Um die Shares übersichtlicher für die Endbenutzer aufzubereiten wird der Server zu DataSrv umbenannt so das einfach über "\\\DataSrv\Data" auf alle Shares zugegriffen werden kann.
+> Mit Docker compose werden automatisch 3 Container gestartet;<br>
+> Als erstes wird der Container erstellt, auf dem die mysql Datenbank läuft.<br>
+> Danach wird der zweite Container mit PHPmyadmin gestartet um die Datenbank über einen Browser managen zu können.<br>
+> Zu gute letzt wird dann als drittes der Container mit Wordpress erstellt, welcher die mysql Datenbank im hintergrund verwendet.
 
 # ❔ Wie es funktioniert ❔
-Der grösste und vorallem wichtigste Teil des Projekts wird über den inline shell provisioner von Vagrant ausgeführt. Jede Zeile im Provisioner wird als zeile gesehen die an die CMD der VM weitergegeben wird. Dies ermöglicht uns alles mögliche zu konfigurieren und zu installieren indem wir einfach schon vorgeben was an die Konsole weitergegeben werden soll.
-```
-config.vm.provision "shell", inline: <<-SHELL
-  # Kommandos zur cmd #
-SHELL
-```
-
-Es ist eigentlich so gut wie alles im Code Dokumentiert, jedoch erläuter ich hier etwas genauer was genau gemacht wird:
-
-<h2>🖥️ Server Konfigurationen 🖥️</h2>
-Hier wird als erster mit dem Kommando hostnamectl den Hostname des Servers von Ubuntu1804 auf DataSrv geändert. Dies soll dann sp$ter den Usern zu nutzen zu kommen indem die SMB Shares einfacher anzusprechen sind da der Servername ersichtlicher ist.<br>
-Danach wird Samba selbst auf den Server installiert. <br>
-Mit dem Kommando `sed -i -e` wird das config file `/etc/samba/smb.conf` nach `workgroup=` durchsucht, und anschliessend mit `workgroup=WORKGROUP` ersetzt. So konnte ich das File editieren ohne wissen zu müssen, wo im File diese Config ist.
-
-```sh
-config.vm.provision "shell", inline: <<-SHELL
-  hostnamectl set-hostname DataSrv
-
-  sudo apt-get install samba -y
-  sed -i -e 's/workgroup=/workgroup=WORKGROUP/g' /etc/samba/smb.conf
-SHELL
+Am start des Files wird ein Volume für die Datenbank / Website erstellt, sowieein Netzwerk so dass alle Container miteinander kommunizieren können.
+```yml
+volumes:
+  db_data:
+networks:
+  wpsite:
 ```
 
-<h2>📁 Ordner & Berechtigungen 📁</h2>
-In diesem Abteil werden unsere beiden Ordner /data und /data/Testfolder erstellt. Danach erstellen wir eine neue Gruppe namens "informaticians" welche darauf Schreib- sowie Leseberechtigungen bekommt.<br>
-Der User vagrant wird dazwischen zur gruppe "informaticians" hinzugefügt.
+Der rest des ganzen Files ist in 3 Teile aufgeteilt:
 
-```sh
-config.vm.provision "shell", inline: <<-SHELL
-  sudo mkdir /data
-  sudo mkdir /data/Testfolder
-  sudo groupadd informaticians
-  sudo usermod -aG informaticians vagrant 
-  sudo chown -R :informaticians /data
-  sudo chmod -R g+rw /data
-SHELL
+<h2>🐬 mysql Konfiguration 🐬</h2>
+Hier wird als erstes der Container "db" erstellt, mit Passwort, User, etc. für die Datenbank.
+
+Es wird auch angegeben das der Container nach einem Docker Neustart wieder aufgestartet werden soll und das er im Netzwerk wpsite ist.
+
+```yml
+db:
+  image: mysql:latest
+  volumes:
+    - db_data:/var/lib/mysql
+  restart: always
+  environment:
+    MYSQL_ROOT_PASSWORD: password
+    MYSQL_DATABASE: mybase
+    MYSQL_USER: raphael
+    MYSQL_PASSWORD: password
+  networks:
+    - wpsite
 ```
 
-<h2>🗃️ SMB Konfigurationen 🗃️</h2>
-Mit den >> Zeichen addieren wir den vorher geschriebenen Text zum SMB config file. Das wir hinzufügen ist unser DATA folder so dass er von SMB geshared wird und nur die Gruppe "informaticians" auch wirklich darauf zugreifen kann.<br>
-Wir haben zwar vorher den User vagrant zur gruppe informaticians hinzugefügt, jedoch muss jeder User noch dazu zum SMB selbst hinzugefügt werden. mit der Pipe "|" können wir dem command `sudo smbpasswd -a vagrant` automatisch das passwort 2 mal hinzufügen. *(/n ist ein Enter da wir 2 mal das passwort eingeben müssen.)*<br>
-Zum schluss wird dann der User vagrant auf smb aktiviert.
+<h2>⛵ phpmyadmin Konfiguration ⛵</h2>
+Danach wird hier der Container phpmyadmin erstellt. Dies jedoch nur imfall das der Container "db" schon läuft. Es werden alle Daten angegeben sodass sich phpmyadmin auf die DB einloggen kann und die Ports zur Weboberfläche werden weitergeleitet.
 
-```sh
-config.vm.provision "shell", inline: <<-SHELL
-  echo "[DATA]" >> /etc/smb.conf
-  echo "path = /data" >> /etc/smb.conf
-  echo "valid users = @informaticians" >> /etc/smb.conf
-  echo "browsable = yes" >> /etc/smb.conf
-  echo "writable = yes" >> /etc/smb.conf
-  echo "read only = no" >> /etc/smb.conf
+Es wird auch angegeben das der Container nach einem Docker Neustart wieder aufgestartet werden soll und das er im Netzwerk wpsite ist.
 
-  echo -e vagrant\nvagrant | sudo smbpasswd -a vagrant
-  sudo smbpasswd -e vagrant
-SHELL
+```yml
+phpmyadmin:
+  depends_on:
+    - db
+  image: phpmyadmin:latest
+  restart: always
+  ports:
+    - '8080:80'
+  environment:
+    PMA_HOST: db
+    MYSQL_ROOT_PASSWORD: password
+  networks:
+    - wpsite
 ```
 
-# 🔧 Probleme beim Testing 🔧
+<h2>📰 Wordpress Konfiguration 📰</h2>
+Zu guter letzt wird dann der Wordpress Container aufgesetzt. Dies jedoch nur imfall das der Container "db" schon läuft. Es werden alle Daten angegeben sodass sich Wordpress auf die DB einloggen kann und die Ports zur Website werden weitergeleitet.
+Das Volumen für die Website wird auch schon erstellt.
+
+Es wird auch angegeben das der Container nach einem Docker Neustart wieder aufgestartet werden soll und das er im Netzwerk wpsite ist.
+
+```yml
+wordpress:
+  depends_on:
+    - db
+  image: wordpress:latest
+  ports:
+    - '8000:80'
+  restart: always
+  volumes: ['./:/var/www/html']
+  environment:
+    WORDPRESS_DB_HOST: db:3306
+    WORDPRESS_DB_USER: raphael
+    WORDPRESS_DB_PASSWORD: password
+  networks:
+    - wpsite
+```
+
+
+# 🔧 Testing 🔧
 <h3>❗ Passwort für den vagrant User auf SMB konfigurieren ❗</h3>
-<p align="left">
-  <img width="600" src="./media/VagrantPassSmb.PNG">
-</p>
 
-> Als das Passwort das erste mal nicht funktionierte konnte ich eine schnelle Lösung finden. Mein problem war das ich das echo PASWORT nicht gepiped habe, dadurch wurde bei dem commando kein Passwort angegeben und es war schnell ersichtlich da das Passwort einfach nachtröglich ausgegeben war.
-
-> Beim zweiten versuch wurde zwar das passwort mitgegeben, jedoch muss man das Passwort 2 mal angeben. Ich habe nach Möglichkeiten gesucht und diese gewählt welche sonst eigentlich überall funktioniert, nämlich mit einem \n (einem ENTER) einfach das passwort 2 mal zu senden. Leider musste ich schmerhaft herausfinden dass dies bei SMB nicht funktionierte.<br>
-Dies ist leider ein Problem das ich bis zum Ende des Projektes nicht abschliessen konnte.
-
-<br>
 <h3>❓ SMB Share im Netzwerk sichtbar machen ❓</h3>
-<p align="left">
-  <img width="600" src="./media/SMBStatus.PNG">
-</p>
 
-> Nachdem alle config Files richtig configuriert wurden und der SMB Daemon ohne probleme lief (oben ersichtlich) war es mitr nur möglich den Server selbst zu sehen *\\\DataSrv* aber nicht die Unterordner. Jedes mal wo ich versuchte mich zu verbinden gab es einen Error / der ordner konnte nicht gefunden werden. Ich habe mich erkundigt an was dies liegen könnte, habe sogar die Portweiterlietung etc verändert doch nichts beseitigte das Problem.<br>
-Deshalb ist dies leider auch ein Problem das ich bis zum Ende des Projektes nicht abschliessen konnte.
 
 # 📚 Quellen 📚
-<h3>Für Projekt benötigte Daten</h3>
+<h3>Für Projekt benötigte Container</h3>
 
-[Genutze Box als Basis](https://app.vagrantup.com/generic/boxes/ubuntu1804)
+[mysql](https://hub.docker.com/_/mysql)<br>
+[phpmyadmin](https://hub.docker.com/_/phpmyadmin)<br>
+[wordpress](https://hub.docker.com/_/wordpress)<br>
 
 <h3>Tutorials / Informationen</h3>
 
-[Synced Folder](https://www.vagrantup.com/docs/synced-folders/smb)<br>
-[SMB Shares](https://wirywolf.com/2014/03/vagrant-mount-guest-samba-shares.html)<br>
-[Provisioning](https://www.vagrantup.com/docs/provisioning/basic_usage)
+[Screencasts](https://www.nanoo.tv/link/v/DDKjuKJG)<br>
+[Docker cheatsheet](https://tbzedu.sharepoint.com/sites/M300_Documents/Freigegebene%20Dokumente/Forms/AllItems.aspx?id=%2Fsites%2FM300%5FDocuments%2FFreigegebene%20Dokumente%2Fcheat%2Dsheet%2Dv2%2Epdf&parent=%2Fsites%2FM300%5FDocuments%2FFreigegebene%20Dokumente&p=true&originalPath=aHR0cHM6Ly90YnplZHUuc2hhcmVwb2ludC5jb20vOmI6L3MvTTMwMF9Eb2N1bWVudHMvRVJZLUdwRjR3V2hKdEJJSV8tV0htSmtCNURPRWVZTkNfNExxa0tVSlRGSnlCdz9ydGltZT1jU3RweGNBRDJVZw)<br>
+[Dockerhub (Einzelne Container)](https://hub.docker.com/)
