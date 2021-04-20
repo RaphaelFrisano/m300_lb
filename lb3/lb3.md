@@ -1,4 +1,4 @@
-# 📑 LB3 Dokumentation - Automatisches Wordpress mit Datenbank 📑
+# 📑 LB3 Dokumentation - Wordpress mit Datenbank 📑
 <p align="left">
   <img height = "240" src="./media/docker.png">
   <img height = "240" src="./media/wordpress.png">
@@ -13,19 +13,15 @@ _Erstellt von [Raphael Frisano](https://github.com/RaphaelFrisano) am 20.04.2021
 
 <img src="./media/network.png">
 
-<h2>☄️ Ports & verbindungen ☄️</h2>
-<p>
-phpmyadmin ➡️ Port 8000 ➡️ mysql
-</p>
-<p>
-mysql ➡️ Port 8000 ➡️ wordpress
-</p>
-<p>
+<h2>☄️ Ports & Verbindungen ☄️</h2>
+
+phpmyadmin ➡️ Port 3306 ➡️ mysql<br>
+phpmyadmin ➡️ Port 8080 ➡️ Virtual Machine
+
+wordpress ➡️ Port 3306 ➡️ mysql<br>
 wordpress ➡️ Port 8000 ➡️ Virtual Machine
-</p>
-<p>
-Virtual Machine ➡️ Port 8000 ➡️ Host System
-</p>
+
+Virtual Machine ➡️ Port 8000 & 8080 ➡️ Host System + Netzwerk
 
 
 # 📜 Projektbeschreibung 📜
@@ -35,6 +31,14 @@ Virtual Machine ➡️ Port 8000 ➡️ Host System
 > Zu gute letzt wird dann als drittes der Container mit Wordpress erstellt, welcher die mysql Datenbank im hintergrund verwendet.
 
 # ❔ Wie es funktioniert ❔
+*Das ganze Projekt kann auf der von Vagrant erstellten VM mit 2 einfachen commands gestartet werden, da Docker Compose schon installiert wurde und man sich in SMB mit seinem Windows login einloggt.*
+
+```
+cd /vagrant
+docker-compose -f dockerfile.yml up -d
+```
+
+
 Am start des Files wird ein Volume für die Datenbank / Website erstellt, sowieein Netzwerk so dass alle Container miteinander kommunizieren können.
 ```yml
 volumes:
@@ -110,10 +114,18 @@ wordpress:
 
 
 # 🔧 Testing 🔧
-<h3>❗ Passwort für den vagrant User auf SMB konfigurieren ❗</h3>
+<h3>✔️ Erstellung der Container ✔️</h3>
+Es konnten alle Container erfolgreich erstellt werden.<br>
+<img height = "" src="./media/all_created.png"><br>
 
-<h3>❓ SMB Share im Netzwerk sichtbar machen ❓</h3>
+Genauso wurde auch das Volumen sowie das Netztwerk erstellt.<br>
+<img height = "" src="./media/internal_network.png"><br>
+<img width = "600" src="./media/internal_network2.png"><br>
 
+<h3>❌ Verbindung auf Port 8080 und 8000 ❌</h3>
+Leider gab es diesesmal auch wieder Probleme. Egal ob man auf phpmyadmin (Port 8080) oder Wordpress (Port 8000) zugreifen will, bekomme ich diesen Error. Ich hatte versucht ihn zu fixen intem ich andere Ports versucht habe was jedoch auch nicht viel geholfen hatte.<br>
+Eine Vermutung von mir könnte sein das es etwas an meinem Heimnetz zu tun hat da wir recht strikte Regeln im Netz haben, weswegen das Netz probleme hat eine von einem Container / VM kommende Verbindung zuzulassen.<br>
+<img height = "" src="./media/error.png"><br>
 
 # 📚 Quellen 📚
 <h3>Für Projekt benötigte Container</h3>
